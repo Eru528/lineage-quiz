@@ -10,9 +10,40 @@
         #cl-quiz .clq-card { background:rgba(15,18,40,.92); color:#fff; border-radius:16px; padding:20px; }
         #cl-quiz .clq-title { text-align:center; margin:0 0 5px; font-size:1.6rem; }
         #cl-quiz .clq-subtitle { text-align:center; color:#ccc; margin-bottom:15px; }
-        #cl-quiz .clq-question { margin-bottom:18px; padding:14px; border-radius:12px; background:rgba(255,255,255,.05); }
+        
+        /* ⭐ 分步顯示的核心 CSS ⭐ */
+        #cl-quiz .clq-question {
+            margin-bottom:18px; 
+            padding:14px; 
+            border-radius:12px; 
+            background:rgba(255,255,255,.05);
+            /* 初始狀態，隱藏且透明 */
+            opacity: 0;
+            display: none;
+            transition: opacity 0.5s ease-in-out; /* 淡入淡出效果 */
+        }
+        /* 顯示中的問題 */
+        #cl-quiz .clq-question.active {
+            opacity: 1;
+            display: block;
+        }
+
         #cl-quiz .clq-option { display:block; margin:5px 0; cursor:pointer; }
-        #cl-quiz .clq-btn { background:#ff8a3d; border:none; color:#000; padding:10px 18px; border-radius:50px; font-weight:600; cursor:pointer; }
+        #cl-quiz .clq-btn { 
+            background:#ff8a3d; 
+            border:none; 
+            color:#000; 
+            padding:10px 18px; 
+            border-radius:50px; 
+            font-weight:600; 
+            cursor:pointer;
+            margin-top: 15px; /* 按鈕間距 */
+        }
+        /* 按鈕隱藏 */
+        #cl-quiz .hidden-button {
+            display: none;
+        }
+
         #cl-quiz .clq-result { margin-top:20px; padding:15px; background:rgba(255,255,255,.07); border-radius:12px; display:none; }
         #cl-quiz .clq-result-class { font-size:1.4rem; font-weight:700; color:#ffd976; margin-bottom:6px; }
         /* 分享區 */
@@ -28,7 +59,7 @@
         <h1 class="clq-title">初戀天堂 ‧ 職業推薦測驗</h1>
         <div class="clq-subtitle">回答幾個簡單問題，看看你最適合成為哪一種英雄。</div>
         <form id="clq-quizForm">
-            <div class="clq-question">
+            <div class="clq-question active" data-qindex="0">
                 <div class="clq-question-title">Q1. 你偏好的戰鬥風格是？</div>
                 <label class="clq-option">
                     <input type="radio" name="q1" data-scores="wizard:1,elf:1"> 遠距離、用魔法或元素之力解決問題。
@@ -43,7 +74,7 @@
                     <input type="radio" name="q1" data-scores="darkElf:2,dragonKnight:1"> 高爆發的暗殺與追擊，一瞬間終結敵人。
                 </label>
             </div>
-            <div class="clq-question">
+            <div class="clq-question" data-qindex="1">
                 <div class="clq-question-title">Q2. 在團隊中，你最習慣扮演哪種角色？</div>
                 <label class="clq-option">
                     <input type="radio" name="q2" data-scores="prince:3"> 領袖與決策者，負責號召、溝通與下指令。
@@ -58,7 +89,7 @@
                     <input type="radio" name="q2" data-scores="darkElf:2,dragonKnight:1"> 單點輸出或收割，專心把敵人一個一個放倒。
                 </label>
             </div>
-            <div class="clq-question">
+            <div class="clq-question" data-qindex="2">
                 <div class="clq-question-title">Q3. 面對力量與信念，你比較像？</div>
                 <label class="clq-option">
                     <input type="radio" name="q3" data-scores="prince:2,knight:2,elf:1"> 堅守正義、推翻腐敗、保護重要的人。
@@ -73,7 +104,7 @@
                     <input type="radio" name="q3" data-scores="wizard:1,dragonKnight:2"> 不管正邪，只重視能不能贏。
                 </label>
             </div>
-            <div class="clq-question">
+            <div class="clq-question" data-qindex="3">
                 <div class="clq-question-title">Q4. 你偏好哪種難度？</div>
                 <label class="clq-option">
                     <input type="radio" name="q4" data-scores="prince:2,knight:2"> 簡單直覺、上手快。
@@ -85,7 +116,7 @@
                     <input type="radio" name="q4" data-scores="wizard:2,darkElf:2,dragonKnight:1"> 願意練技術，換取爆發或後期強勢。
                 </label>
             </div>
-            <div class="clq-question">
+            <div class="clq-question" data-qindex="4">
                 <div class="clq-question-title">Q5. 單看外型，你最喜歡哪個風格？</div>
                 <label class="clq-option">
                     <input type="radio" name="q5" data-scores="prince:3"> 王者氣質、佩劍披風的領袖風格。
@@ -103,7 +134,9 @@
                     <input type="radio" name="q5" data-scores="wizard:3"> 長袍法杖、魔法陣與古籍的法術風格。
                 </label>
             </div>
-            <button type="button" id="clq-submit" class="clq-btn">查看推薦職業</button>
+            
+            <button type="button" id="clq-next" class="clq-btn">下一題 →</button>
+            <button type="button" id="clq-submit" class="clq-btn hidden-button">查看推薦職業</button>
         </form>
         <div id="clq-result" class="clq-result">
             <div class="clq-result-title">測驗結果：</div>
@@ -121,9 +154,7 @@
 
 <script>
     (function(){
-        // *** 請注意：這裡的網址已替換為您 GitHub Pages 的實際網址 ***
         const QUIZ_URL = "https://eru528.github.io/lineage-quiz/"; 
-
         const CLASS_INFO = {
             wizard:{name:"法師（Wizard）",desc:"你適合成為以知識與魔法為武器的法師。"},
             prince:{name:"王族（Prince）",desc:"你天生具備領袖氣質，是攻城戰的核心靈魂。"},
@@ -133,26 +164,72 @@
             dragonKnight:{name:"龍騎士（Dragon Knight）",desc:"你擅長近戰爆發，能使用龍族之力扭轉戰局。"}
         };
 
-        function calculateResult(){
-            const form = document.getElementById("clq-quizForm");
-            // 修正：在 Chrome 瀏覽器中，querySelector 裡的屬性選擇器需要引號
-            const qs = ["q1","q2","q3","q4","q5"];
-            const scores = {wizard:0, prince:0, knight:0, elf:0, darkElf:0, dragonKnight:0};
+        const questionContainers = document.querySelectorAll('.clq-question');
+        const nextButton = document.getElementById('clq-next');
+        const submitButton = document.getElementById('clq-submit');
+        const totalQuestions = questionContainers.length;
+        let currentQIndex = 0;
+        let scores = {wizard:0, prince:0, knight:0, elf:0, darkElf:0, dragonKnight:0};
 
-            for(let q of qs){
-                // 查找選中的 radio 按鈕
-                const sel = form.querySelector(`input[name="${q}"]:checked`); 
-                if(!sel){
-                    alert("每題都要回答喔！");
-                    return;
-                }
-                const pairs = sel.dataset.scores.split(",");
-                for(let p of pairs){
-                    let [k,v] = p.split(":");
-                    scores[k] += parseInt(v);
-                }
+        // 初始化：確保只有第一題顯示
+        questionContainers.forEach((q, index) => {
+            if (index > 0) {
+                q.classList.remove('active');
             }
-            
+        });
+
+        function calculateScores(selectedOption) {
+            const pairs = selectedOption.dataset.scores.split(",");
+            for(let p of pairs){
+                let [k,v] = p.split(":");
+                scores[k] += parseInt(v);
+            }
+        }
+        
+        // 核心邏輯：顯示下一題
+        function showNextQuestion() {
+            const currentQ = questionContainers[currentQIndex];
+            const currentQName = currentQ.querySelector('input').name;
+            const selectedOption = currentQ.querySelector(`input[name="${currentQName}"]:checked`);
+
+            if (!selectedOption) {
+                alert("請回答當前問題！");
+                return;
+            }
+
+            // 累積當前分數
+            calculateScores(selectedOption);
+
+            // 1. 淡出當前問題
+            currentQ.style.opacity = '0';
+            // 使用延遲來執行 display:none，以實現淡出效果
+            setTimeout(() => {
+                currentQ.classList.remove('active');
+                
+                // 進入下一題
+                currentQIndex++;
+
+                if (currentQIndex < totalQuestions) {
+                    const nextQ = questionContainers[currentQIndex];
+                    
+                    // 2. 淡入下一題
+                    nextQ.style.display = 'block';
+                    // 必須延遲下一幀執行，才能觸發 CSS transition
+                    setTimeout(() => {
+                        nextQ.classList.add('active');
+                    }, 50); 
+                    
+                } else {
+                    // 3. 測驗結束，顯示最終按鈕
+                    nextButton.classList.add('hidden-button');
+                    submitButton.classList.remove('hidden-button');
+                }
+            }, 500); // 延遲時間與 CSS transition 時間一致
+
+        }
+
+        // 最終計算結果
+        function calculateResult() {
             let best="", max=-999;
             for(let k in scores){
                 if(scores[k]>max){
@@ -161,39 +238,43 @@
                 }
             }
 
-            // 顯示結果
-            const r = document.getElementById("clq-result");
-            document.getElementById("clq-resultClass").innerHTML = CLASS_INFO[best].name;
-            document.getElementById("clq-resultDesc").innerHTML = CLASS_INFO[best].desc;
-            r.style.display="block";
+            // 隱藏按鈕和題目，顯示結果
+            const finalQ = questionContainers[totalQuestions - 1];
+            finalQ.style.opacity = '0';
+            submitButton.classList.add('hidden-button');
 
-            // ⭐產生分享文案 (已替換您的網址)
-            const share = `【初戀天堂 ‧ 職業測驗】
+            setTimeout(() => {
+                finalQ.classList.remove('active');
+                
+                const r = document.getElementById("clq-result");
+                document.getElementById("clq-resultClass").innerHTML = CLASS_INFO[best].name;
+                document.getElementById("clq-resultDesc").innerHTML = CLASS_INFO[best].desc;
+                r.style.display="block";
+
+                // ⭐產生分享文案
+                const share = `【初戀天堂 ‧ 職業測驗】
 我測出來最適合的職業是：▶ ${CLASS_INFO[best].name}
 你呢？快來試試你適合哪個職業！
 測驗網址：${QUIZ_URL}`;
 
-            document.getElementById("clq-shareText").value = share;
-            document.getElementById("clq-shareBox").style.display = "block";
+                document.getElementById("clq-shareText").value = share;
+                document.getElementById("clq-shareBox").style.display = "block";
+            }, 500);
         }
 
-        // 綁定按鈕
-        document.getElementById("clq-submit").addEventListener("click", calculateResult);
+        // 綁定按鈕事件
+        nextButton.addEventListener("click", showNextQuestion);
+        submitButton.addEventListener("click", calculateResult);
 
-        // 一鍵複製
+        // 一鍵複製功能保持不變
         document.getElementById("clq-copyBtn").addEventListener("click", function(){
             const ta = document.getElementById("clq-shareText");
             ta.select();
             ta.setSelectionRange(0,99999);
-            // 檢查瀏覽器是否支持 clipboard.writeText
+            // 使用現代 Clipboard API
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(ta.value)
                     .then(() => {
-                        alert("已複製！可以貼到 FB / DC / LINE 囉！");
-                    })
-                    .catch(err => {
-                        // 舊版瀏覽器或安全限制下的備用方案
-                        document.execCommand("copy");
                         alert("已複製！可以貼到 FB / DC / LINE 囉！");
                     });
             } else {
